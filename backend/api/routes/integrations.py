@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from typing import List
 import secrets
 from datetime import datetime
-
+import os
 from database.connection import get_db
 from database.models import User, Integration, IntegrationStatus
 from schemas import schemas
@@ -56,27 +56,37 @@ async def get_integration(
 @router.get("/shopify/auth")
 async def shopify_auth_initiate(
     shop: str,
-    current_user: User = Depends(get_current_user),
+    user_id: int,
     db: Session = Depends(get_db)
 ):
     """
     Initiate Shopify OAuth flow
-    
-    Step 1: Generate authorization URL and redirect user to Shopify
     """
-    # Generate random state for CSRF protection
+
+    # 1️⃣ Load env variables
+    SHOPIFY_API_KEY = os.getenv("SHOPIFY_API_KEY")
+    SHOPIFY_SCOPES = os.getenv("SHOPIFY_SCOPES")
+    SHOPIFY_REDIRECT_URI = os.getenv("SHOPIFY_REDIRECT_URI")
+
+    # 2️⃣ Generate state
     state = secrets.token_urlsafe(32)
-    
-    # Store state in Redis with user ID (expires in 10 minutes)
+
+    # 3️⃣ Store state in Redis
     await redis_client.set(
         f"shopify_oauth_state:{state}",
-        str(current_user.id),
+        str(user_id),
         expire=600
     )
-    
-    # Generate authorization URL
-    auth_url = shopify_oauth.get_authorization_url(shop, state)
-    
+
+    # 4️⃣ Build auth URL
+    auth_url = (
+        f"https://{shop}/admin/oauth/authorize"
+        f"?client_id={SHOPIFY_API_KEY}"
+        f"&scope={SHOPIFY_SCOPES}"
+        f"&redirect_uri={SHOPIFY_REDIRECT_URI}"
+        f"&state={state}"
+    )
+
     return {"auth_url": auth_url}
 
 
