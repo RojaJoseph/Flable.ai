@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flable.ai Debug Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: white;
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        h2 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        button.danger {
+            background: #dc3545;
+        }
+        button.danger:hover {
+            background: #c82333;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+            border: 1px solid #dee2e6;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        #testResults {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Flable.ai Debug Tool</h1>
+
+        <!-- Token Status -->
+        <div class="card">
+            <h2>📋 Current Token Status</h2>
+            <div id="tokenStatus"></div>
+            <button onclick="checkTokens()" style="margin-top: 10px;">🔄 Refresh Status</button>
+            <button class="danger" onclick="clearAllTokens()">🗑️ Clear All Tokens</button>
+        </div>
+
+        <!-- API Test -->
+        <div class="card">
+            <h2>🧪 Test Full Login Flow</h2>
+            <p>This will test the complete authentication flow and show exactly where it fails.</p>
+            <button onclick="testLoginFlow()">▶️ Run Full Test</button>
+            <div id="testResults"></div>
+        </div>
+
+        <!-- Quick Fixes -->
+        <div class="card">
+            <h2>⚡ Quick Fixes</h2>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>Clear Tokens & Cache</strong>
+                <br>
+                <button onclick="clearEverything()" style="margin-top: 10px;">Clear Everything</button>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>Test Backend Directly</strong>
+                <br>
+                <button onclick="testBackend()" style="margin-top: 10px;">Test Backend</button>
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>Go to Login (Fresh)</strong>
+                <br>
+                <button onclick="goToLogin()" style="margin-top: 10px;">Go to Login Page</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000';
+
+        function checkTokens() {
+            const access = localStorage.getItem('access_token');
+            const refresh = localStorage.getItem('refresh_token');
+            
+            let html = '';
+            
+            if (!access && !refresh) {
+                html = '<div class="status success">✅ No tokens found - Good! Ready for fresh login.</div>';
+            } else {
+                if (access) {
+                    html += `<div class="status info">
+                        <strong>Access Token Found:</strong><br>
+                        <pre>${access.substring(0, 100)}...</pre>
+                    </div>`;
+                }
+                if (refresh) {
+                    html += `<div class="status info">
+                        <strong>Refresh Token Found:</strong><br>
+                        <pre>${refresh.substring(0, 100)}...</pre>
+                    </div>`;
+                }
+                html += '<div class="status warning">⚠️ Old tokens detected. Clear them for fresh start.</div>';
+            }
+            
+            document.getElementById('tokenStatus').innerHTML = html;
+        }
+
+        function clearAllTokens() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            document.getElementById('tokenStatus').innerHTML = 
+                '<div class="status success">✅ All tokens cleared!</div>';
+            setTimeout(checkTokens, 1000);
+        }
+
+        function clearEverything() {
+            localStorage.clear();
+            sessionStorage.clear();
+            document.getElementById('tokenStatus').innerHTML = 
+                '<div class="status success">✅ Everything cleared! Browser storage is now empty.</div>';
+            setTimeout(checkTokens, 1000);
+        }
+
+        async function testBackend() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<div class="status info">🔄 Testing backend...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    results.innerHTML = `
+                        <div class="status success">
+                            ✅ Backend is running!<br>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="status error">
+                            ❌ Backend returned error: ${response.status}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <div class="status error">
+                        ❌ Cannot connect to backend!<br>
+                        Make sure backend is running on ${API_URL}<br>
+                        Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function testLoginFlow() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<div class="status info">🔄 Starting full test...</div>';
+
+            let html = '';
+
+            // Step 1: Test backend
+            html += '<h3>Step 1: Backend Health Check</h3>';
+            try {
+                const healthResponse = await fetch(`${API_URL}/health`);
+                const healthData = await healthResponse.json();
+                html += `<div class="status success">✅ Backend is running: ${healthData.status}</div>`;
+            } catch (error) {
+                html += `<div class="status error">❌ Backend not accessible: ${error.message}</div>`;
+                results.innerHTML = html;
+                return;
+            }
+
+            // Step 2: Clear old tokens
+            html += '<h3>Step 2: Clear Old Tokens</h3>';
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            html += '<div class="status success">✅ Cleared old tokens</div>';
+
+            // Step 3: Login
+            html += '<h3>Step 3: Attempt Login</h3>';
+            try {
+                const loginResponse = await fetch(`${API_URL}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'demo@flable.ai',
+                        password: 'demo123'
+                    })
+                });
+
+                if (loginResponse.ok) {
+                    const loginData = await loginResponse.json();
+                    html += '<div class="status success">✅ Login successful!</div>';
+                    html += `<pre>Access Token: ${loginData.access_token.substring(0, 50)}...
+Refresh Token: ${loginData.refresh_token.substring(0, 50)}...</pre>`;
+
+                    // Store tokens
+                    localStorage.setItem('access_token', loginData.access_token);
+                    localStorage.setItem('refresh_token', loginData.refresh_token);
+
+                    // Step 4: Test authenticated request
+                    html += '<h3>Step 4: Test Dashboard Request</h3>';
+                    
+                    const dashboardResponse = await fetch(`${API_URL}/api/v1/dashboard`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${loginData.access_token}`
+                        }
+                    });
+
+                    if (dashboardResponse.ok) {
+                        const dashboardData = await dashboardResponse.json();
+                        html += '<div class="status success">✅ Dashboard loaded successfully!</div>';
+                        html += `<pre>${JSON.stringify(dashboardData.stats, null, 2)}</pre>`;
+                        html += '<div class="status success"><strong>🎉 ALL TESTS PASSED!</strong><br>Backend is working perfectly. Your issue is likely frontend caching.</div>';
+                    } else {
+                        const errorText = await dashboardResponse.text();
+                        html += `<div class="status error">❌ Dashboard request failed: ${dashboardResponse.status}<br><pre>${errorText}</pre></div>`;
+                    }
+
+                } else {
+                    const errorText = await loginResponse.text();
+                    html += `<div class="status error">❌ Login failed: ${loginResponse.status}<br><pre>${errorText}</pre></div>`;
+                }
+            } catch (error) {
+                html += `<div class="status error">❌ Login error: ${error.message}</div>`;
+            }
+
+            results.innerHTML = html;
+        }
+
+        function goToLogin() {
+            clearEverything();
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 500);
+        }
+
+        // Auto-check on load
+        checkTokens();
+    </script>
+</body>
+</html>

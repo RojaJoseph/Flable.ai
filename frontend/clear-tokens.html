@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Flable Tokens</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #c82333;
+        }
+        .success {
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #2196F3;
+        }
+        .tokens {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Flable.ai Token Manager</h1>
+        
+        <div class="info">
+            <strong>Use this page if you're experiencing login issues</strong>
+            <p>This will clear all stored authentication tokens and force a fresh login.</p>
+        </div>
+
+        <h3>Current Tokens:</h3>
+        <div class="tokens" id="tokenDisplay">Loading...</div>
+
+        <button onclick="clearTokens()">Clear All Tokens</button>
+        <button onclick="location.href='http://localhost:3000/login'">Go to Login</button>
+        
+        <div class="success" id="successMessage">
+            ✅ Tokens cleared! You can now login again.
+        </div>
+    </div>
+
+    <script>
+        function displayTokens() {
+            const accessToken = localStorage.getItem('access_token');
+            const refreshToken = localStorage.getItem('refresh_token');
+            
+            let html = '';
+            if (accessToken) {
+                html += `<strong>Access Token:</strong> ${accessToken.substring(0, 50)}...<br><br>`;
+            } else {
+                html += '<strong>Access Token:</strong> None<br><br>';
+            }
+            
+            if (refreshToken) {
+                html += `<strong>Refresh Token:</strong> ${refreshToken.substring(0, 50)}...`;
+            } else {
+                html += '<strong>Refresh Token:</strong> None';
+            }
+            
+            if (!accessToken && !refreshToken) {
+                html = '<em>No tokens found in localStorage</em>';
+            }
+            
+            document.getElementById('tokenDisplay').innerHTML = html;
+        }
+
+        function clearTokens() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            document.getElementById('successMessage').style.display = 'block';
+            displayTokens();
+            
+            setTimeout(() => {
+                location.href = 'http://localhost:3000/login';
+            }, 1500);
+        }
+
+        // Display tokens on load
+        displayTokens();
+    </script>
+</body>
+</html>

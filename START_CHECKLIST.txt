@@ -1,0 +1,139 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║                     SIMPLE START CHECKLIST                             ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+Follow these steps IN ORDER:
+
+┌─ STEP 1: START BACKEND ────────────────────────────────────────────────┐
+│                                                                        │
+│  Open NEW terminal/command prompt:                                    │
+│                                                                        │
+│  cd F:\flable.ai\backend                                               │
+│  python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000     │
+│                                                                        │
+│  ✅ YOU SHOULD SEE:                                                   │
+│     INFO: Uvicorn running on http://127.0.0.1:8000                    │
+│     INFO: Application startup complete.                               │
+│                                                                        │
+│  ⏸️  LEAVE THIS TERMINAL OPEN!                                        │
+│                                                                        │
+└────────────────────────────────────────────────────────────────────────┘
+
+┌─ STEP 2: VERIFY BACKEND IS WORKING ────────────────────────────────────┐
+│                                                                        │
+│  Open browser and go to:                                              │
+│  http://127.0.0.1:8000/health                                         │
+│                                                                        │
+│  ✅ YOU SHOULD SEE:                                                   │
+│     {"status":"healthy","version":"1.0.0","environment":"development"}│
+│                                                                        │
+│  ❌ IF YOU SEE ERROR:                                                 │
+│     Backend is not running! Go back to Step 1.                        │
+│                                                                        │
+└────────────────────────────────────────────────────────────────────────┘
+
+┌─ STEP 3: CLEAR FRONTEND CACHE ─────────────────────────────────────────┐
+│                                                                        │
+│  Open NEW terminal/command prompt:                                    │
+│                                                                        │
+│  cd F:\flable.ai\frontend                                              │
+│  rmdir /s /q .next                                                     │
+│                                                                        │
+│  (Or manually delete the .next folder)                                │
+│                                                                        │
+└────────────────────────────────────────────────────────────────────────┘
+
+┌─ STEP 4: START FRONTEND ───────────────────────────────────────────────┐
+│                                                                        │
+│  In the same frontend terminal:                                       │
+│                                                                        │
+│  npm run dev                                                           │
+│                                                                        │
+│  ✅ YOU SHOULD SEE:                                                   │
+│     ✓ Ready in Xms                                                    │
+│     ○ Local: http://localhost:3000                                    │
+│                                                                        │
+│  ⏸️  LEAVE THIS TERMINAL OPEN TOO!                                   │
+│                                                                        │
+└────────────────────────────────────────────────────────────────────────┘
+
+┌─ STEP 5: VERIFY FRONTEND IS WORKING ───────────────────────────────────┐
+│                                                                        │
+│  Open browser and go to:                                              │
+│  http://localhost:3000                                                │
+│                                                                        │
+│  ✅ YOU SHOULD SEE:                                                   │
+│     The Flable.ai login page                                          │
+│                                                                        │
+│  ❌ IF YOU SEE ERROR:                                                 │
+│     Frontend is not running! Go back to Step 4.                       │
+│                                                                        │
+└────────────────────────────────────────────────────────────────────────┘
+
+┌─ STEP 6: USE DEBUG TOOL ────────────────────────────────────────────────┐
+│                                                                         │
+│  Go to:                                                                │
+│  http://localhost:3000/debug.html                                     │
+│                                                                         │
+│  Click: "Run Full Test"                                               │
+│                                                                         │
+│  ✅ YOU SHOULD SEE:                                                    │
+│     ✅ Backend is running                                             │
+│     ✅ Login successful!                                              │
+│     ✅ Dashboard loaded successfully!                                 │
+│     🎉 ALL TESTS PASSED!                                              │
+│                                                                         │
+│  ❌ IF TEST FAILS:                                                     │
+│     Share the error message with me                                   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─ STEP 7: CLEAR TOKENS & LOGIN ─────────────────────────────────────────┐
+│                                                                        │
+│  In debug tool:                                                       │
+│  1. Click "Clear Everything"                                          │
+│  2. Click "Go to Login Page"                                          │
+│  3. Login:                                                            │
+│     - Email: demo@flable.ai                                           │
+│     - Password: demo123                                               │
+│                                                                        │
+│  ✅ DASHBOARD SHOULD LOAD!                                            │
+│                                                                        │
+└────────────────────────────────────────────────────────────────────────┘
+
+╔════════════════════════════════════════════════════════════════════════╗
+║                         QUICK REFERENCE                                ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+Backend URL:   http://127.0.0.1:8000
+Frontend URL:  http://localhost:3000
+Debug Tool:    http://localhost:3000/debug.html
+
+Login:
+  Email:    demo@flable.ai
+  Password: demo123
+
+╔════════════════════════════════════════════════════════════════════════╗
+║                         TROUBLESHOOTING                                ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+PROBLEM: "Failed to fetch" error
+→ Backend is not running. Do Step 1 again.
+
+PROBLEM: Backend shows "Address already in use"
+→ Port 8000 is busy. Kill the process or use different port:
+  python -m uvicorn main:app --reload --host 127.0.0.1 --port 8001
+
+PROBLEM: Frontend shows "Port 3000 is in use"
+→ Port 3000 is busy. Kill the process or it will offer another port.
+
+PROBLEM: Still getting 401 errors
+→ Make sure you cleared .next cache (Step 3)
+→ Make sure you cleared tokens in debug tool (Step 7.1)
+
+PROBLEM: Debug tool shows different error
+→ Share the exact error message - I'll help you fix it!
+
+╔════════════════════════════════════════════════════════════════════════╗
+║  After completing all steps, your app will work perfectly! 🎉         ║
+╚════════════════════════════════════════════════════════════════════════╝

@@ -1,0 +1,105 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                   FLABLE.AI - QUICK FIX (60 SECONDS)                     ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ PROBLEM: Getting 401 errors after login? Dashboard won't load?          │
+│ CAUSE:   Old tokens in browser storage                                  │
+│ FIX:     Clear tokens once, works forever                               │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌─ STEP 1 ─────────────────────────────────────────────────────────────────┐
+│                                                                          │
+│  Open in your browser:                                                  │
+│  ┌────────────────────────────────────────────────────────────────┐     │
+│  │  F:\flable.ai\frontend\clear-tokens.html                       │     │
+│  └────────────────────────────────────────────────────────────────┘     │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌─ STEP 2 ─────────────────────────────────────────────────────────────────┐
+│                                                                          │
+│  Click the red button: "Clear All Tokens"                               │
+│  (It will auto-redirect you to login)                                   │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌─ STEP 3 ─────────────────────────────────────────────────────────────────┐
+│                                                                          │
+│  Login with:                                                            │
+│  ┌────────────────────────────────────────────────────────────────┐     │
+│  │  Email:    demo@flable.ai                                      │     │
+│  │  Password: demo123                                             │     │
+│  └────────────────────────────────────────────────────────────────┘     │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║                              ✅ DONE!                                    ║
+║                                                                          ║
+║  Your dashboard will load, campaigns will appear,                       ║
+║  and everything will work perfectly!                                    ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+┌─ WHAT YOU'LL SEE ────────────────────────────────────────────────────────┐
+│                                                                          │
+│  ✅ Dashboard loads successfully                                        │
+│  ✅ Campaign stats display                                              │
+│  ✅ No errors in browser console                                        │
+│  ✅ Backend logs show: "200 OK" for all requests                        │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌─ ALTERNATIVE (DON'T WANT TO CLEAR?) ─────────────────────────────────────┐
+│                                                                          │
+│  Just use Incognito/Private browsing mode:                              │
+│  • Chrome: Ctrl+Shift+N                                                 │
+│  • Firefox: Ctrl+Shift+P                                                │
+│  • Edge: Ctrl+Shift+N                                                   │
+│                                                                          │
+│  Then login at: http://localhost:3000/login                             │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌─ NEED TO START SERVERS? ─────────────────────────────────────────────────┐
+│                                                                          │
+│  Backend (if not running):                                              │
+│  ┌────────────────────────────────────────────────────────────────┐     │
+│  │  cd F:\flable.ai\backend                                       │     │
+│  │  python -m uvicorn main:app --reload --host 127.0.0.1 --port   │     │
+│  │  8000                                                           │     │
+│  └────────────────────────────────────────────────────────────────┘     │
+│                                                                          │
+│  Frontend (if not running):                                             │
+│  ┌────────────────────────────────────────────────────────────────┐     │
+│  │  cd F:\flable.ai\frontend                                      │     │
+│  │  npm run dev                                                    │     │
+│  └────────────────────────────────────────────────────────────────┘     │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌─ STILL HAVING ISSUES? ───────────────────────────────────────────────────┐
+│                                                                          │
+│  1. Make sure backend is running (you should see it in logs)            │
+│  2. Make sure frontend is running (localhost:3000 should work)          │
+│  3. Check browser console (F12) for actual error messages               │
+│  4. Read: COMPLETE_FIX_GUIDE.md for detailed troubleshooting            │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌─ FILES TO REFERENCE ─────────────────────────────────────────────────────┐
+│                                                                          │
+│  📄 READ_ME_FIRST.md        - What actually happened & why               │
+│  📄 COMPLETE_FIX_GUIDE.md   - Detailed step-by-step guide               │
+│  📄 FIXES_APPLIED.md        - Technical details of all fixes            │
+│  🌐 clear-tokens.html       - Token clearing utility page               │
+│  🐍 test_api.py             - Test backend directly                     │
+│  🐍 reset_demo_user.py      - Reset user if needed                      │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  💡 REMEMBER: This is a one-time fix. After clearing tokens once,       ║
+║      you won't need to do it again unless you change the backend        ║
+║      authentication system.                                             ║
+╚══════════════════════════════════════════════════════════════════════════╝
