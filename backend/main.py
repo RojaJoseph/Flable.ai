@@ -9,10 +9,9 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from contextlib import asynccontextmanager
-import sentry_sdk
-from prometheus_client import make_asgi_app
 from loguru import logger
 import sys
+import os
 
 # Import from local modules (we're running from backend directory)
 from api.routes import campaigns, analytics, integrations, auth
@@ -29,27 +28,22 @@ logger.add(
     format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan> - <level>{message}</level>",
     level="INFO"
 )
-logger.add(
-    "../logs/flable_{time}.log",
-    rotation="500 MB",
-    retention="30 days",
-    compression="zip",
-    level="DEBUG"
-)
 
-# Initialize Sentry for error tracking
-if settings.SENTRY_DSN:
-    sentry_sdk.init(
-        dsn=settings.SENTRY_DSN,
-        traces_sample_rate=0.1,
-        profiles_sample_rate=0.1,
-    )
+# Initialize Sentry (optional)
+try:
+    if settings.SENTRY_DSN:
+        import sentry_sdk
+        sentry_sdk.init(dsn=settings.SENTRY_DSN, traces_sample_rate=0.1)
+except:
+    pass
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events"""
     logger.info("Starting Flable.ai application...")
+    logger.info(f"Environment: {settings.ENVIRONMENT}")
+    logger.info(f"Allowed origins: {settings.ALLOWED_ORIGINS}")
     
     # Create database tables
     try:
@@ -85,44 +79,54 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan,
-    redirect_slashes=False  # Prevent 307 redirects for trailing slashes
+    lifespan=lifespan
 )
 
-# Add middlewares
-app.add_middleware(GZipMiddleware, minimum_size=1000)
+# ============================================================
+# CORS MIDDLEWARE - Must be added FIRST before other middleware
+# ============================================================
+
+# Get allowed origins - always include common dev origins
+allowed_origins = settings.ALLOWED_ORIGINS
+if isinstance(allowed_origins, str):
+    allowed_origins = [o.strip() for o in allowed_origins.split(',') if o.strip()]
+
+# Always add these as fallback
+default_origins = [
+    "http://localhost:3000",
+    "http://localhost:3001", 
+    "http://127.0.0.1:3000",
+    "https://flable-ai-xwuo.onrender.com",
+]
+for origin in default_origins:
+    if origin not in allowed_origins:
+        allowed_origins.append(origin)
+
+logger.info(f"CORS allowed origins: {allowed_origins}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["*"],
+    expose_headers=["*"],
 )
 
-# Add Prometheus metrics endpoint
-try:
-    metrics_app = make_asgi_app()
-    app.mount("/metrics", metrics_app)
-except Exception as e:
-    logger.warning(f"Could not mount Prometheus metrics: {e}")
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 # Exception handlers
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """Handle validation errors"""
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "detail": exc.errors(),
-            "body": str(exc.body) if exc.body else None
-        },
+        content={"detail": exc.errors()},
     )
 
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    """Handle all other exceptions"""
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -130,20 +134,19 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-# Health check endpoints
+# Health check
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
     return {
         "status": "healthy",
         "version": "1.0.0",
-        "environment": settings.ENVIRONMENT
+        "environment": settings.ENVIRONMENT,
+        "allowed_origins": allowed_origins
     }
 
 
 @app.get("/")
 async def root():
-    """Root endpoint"""
     return {
         "message": "Welcome to Flable.ai API",
         "version": "1.0.0",
@@ -165,7 +168,7 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
         "main:app",
-        host="127.0.0.1",
+        host="0.0.0.0",
         port=8000,
         reload=settings.ENVIRONMENT == "development",
         log_level="info"

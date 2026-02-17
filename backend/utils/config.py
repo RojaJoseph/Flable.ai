@@ -18,16 +18,17 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
     
     # Security
-    SECRET_KEY: str = "your-super-secret-key-change-in-production"
+    SECRET_KEY: str = "flable-super-secret-key-change-this-in-production-min-32-characters"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
-    # CORS
+    # CORS - Default allows all common origins
     ALLOWED_ORIGINS: Union[List[str], str] = [
         "http://localhost:3000",
         "http://localhost:3001",
-        "https://app.flable.ai"
+        "http://127.0.0.1:3000",
+        "https://flable-ai-xwuo.onrender.com",
     ]
     
     @field_validator('ALLOWED_ORIGINS', mode='before')
@@ -35,52 +36,56 @@ class Settings(BaseSettings):
     def parse_cors_origins(cls, v):
         """Parse ALLOWED_ORIGINS from comma-separated string or list"""
         if isinstance(v, str):
+            # Handle JSON array format ["url1","url2"]
             if v.startswith("[") and v.endswith("]"):
                 import json
                 try:
                     return json.loads(v)
                 except:
-                    return [i.strip() for i in v[1:-1].split(",") if i.strip()]
-            return [origin.strip() for origin in v.split(',') if origin.strip()]
+                    pass
+            # Handle comma-separated format url1,url2,url3
+            origins = [origin.strip() for origin in v.split(',') if origin.strip()]
+            return origins
         elif isinstance(v, list):
             return v
         return v
     
-    # Database
-    DATABASE_URL: str = "postgresql://flable:flable123@localhost:5432/flable_db"
+    # Database - Default to SQLite for local, override with PostgreSQL URL in production
+    DATABASE_URL: str = "sqlite:///./flable.db"
     DATABASE_POOL_SIZE: int = 10
     DATABASE_MAX_OVERFLOW: int = 20
     
-    # Redis
+    # Redis - Optional
     REDIS_URL: str = "redis://localhost:6379/0"
     REDIS_PASSWORD: str = ""
     
-    # Celery
+    # Celery - Optional
     CELERY_BROKER_URL: str = "redis://localhost:6379/1"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/2"
     
-    # External APIs - Shopify (OAuth)
+    # Shopify OAuth
     SHOPIFY_CLIENT_ID: str = ""
     SHOPIFY_CLIENT_SECRET: str = ""
     SHOPIFY_REDIRECT_URI: str = "http://localhost:8000/api/v1/integrations/shopify/callback"
     SHOPIFY_SCOPES: str = "read_products,write_products,read_orders,write_orders,read_customers,read_analytics"
+    SHOPIFY_API_KEY: str = ""
     
-    # External APIs - Google Ads
+    # Google Ads
     GOOGLE_ADS_DEVELOPER_TOKEN: str = ""
     GOOGLE_ADS_CLIENT_ID: str = ""
     GOOGLE_ADS_CLIENT_SECRET: str = ""
     GOOGLE_ADS_REFRESH_TOKEN: str = ""
     
-    # External APIs - Facebook/Meta
+    # Facebook/Meta
     FACEBOOK_APP_ID: str = ""
     FACEBOOK_APP_SECRET: str = ""
     FACEBOOK_ACCESS_TOKEN: str = ""
     
-    # External APIs - Google Analytics
+    # Google Analytics
     GA4_PROPERTY_ID: str = ""
     GA4_CREDENTIALS_PATH: str = ""
     
-    # External APIs - Stripe
+    # Stripe
     STRIPE_SECRET_KEY: str = ""
     STRIPE_PUBLISHABLE_KEY: str = ""
     STRIPE_WEBHOOK_SECRET: str = ""
