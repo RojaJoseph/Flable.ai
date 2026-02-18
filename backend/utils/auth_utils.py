@@ -1,36 +1,43 @@
 """
 Authentication utilities - JWT, password hashing, user verification
+Uses Argon2 for password hashing (pure Python, always works!)
 """
 
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from loguru import logger
+import logging
 
 from database.connection import get_db
 from database.models import User
 from utils.config import settings
 
-# Password hashing - Support both bcrypt and pbkdf2_sha256 for compatibility
-pwd_context = CryptContext(schemes=["bcrypt", "pbkdf2_sha256"], deprecated="auto")
+logger = logging.getLogger(__name__)
+
+# Password hasher - Argon2 (pure Python, no compilation needed!)
+ph = PasswordHasher()
 
 # JWT Bearer token
 security = HTTPBearer(auto_error=False)
 
 
 def hash_password(password: str) -> str:
-    """Hash a password using bcrypt"""
-    return pwd_context.hash(password)
+    """Hash a password using Argon2"""
+    return ph.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against its hash (supports bcrypt and pbkdf2_sha256)"""
+    """Verify a password against its Argon2 hash"""
     try:
-        return pwd_context.verify(plain_password, hashed_password)
+        ph.verify(hashed_password, plain_password)
+        return True
+    except VerifyMismatchError:
+        return False
     except Exception as e:
         logger.error(f"Password verification error: {e}")
         return False
