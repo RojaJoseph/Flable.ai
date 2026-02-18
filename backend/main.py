@@ -38,6 +38,32 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"❌ Database error: {e}")
     
+    # Seed demo user if not exists
+    try:
+        from database.connection import SessionLocal
+        from database.models import User
+        from utils.auth_utils import hash_password
+        db = SessionLocal()
+        existing = db.query(User).filter(User.email == "demo@flable.ai").first()
+        if not existing:
+            user = User(
+                email="demo@flable.ai",
+                username="demo_user",
+                hashed_password=hash_password("demo123"),
+                full_name="Demo User",
+                company_name="Demo Company",
+                is_active=True,
+                is_verified=True
+            )
+            db.add(user)
+            db.commit()
+            logger.info("✅ Demo user created: demo@flable.ai / demo123")
+        else:
+            logger.info("✅ Demo user already exists")
+        db.close()
+    except Exception as e:
+        logger.error(f"❌ Seed error: {e}")
+    
     yield
     
     logger.info("👋 Shutting down")
