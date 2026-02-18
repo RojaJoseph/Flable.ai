@@ -98,51 +98,6 @@ async def login(login_data: schemas.LoginRequest, db: Session = Depends(get_db))
     }
 
 
-@router.get("/debug/token")
-async def debug_token(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)):
-    """Debug endpoint to test token validation"""
-    
-    if not authorization:
-        return {
-            "error": "No Authorization header",
-            "help": "Send Authorization: Bearer <token>"
-        }
-    
-    if not authorization.startswith("Bearer "):
-        return {
-            "error": "Invalid Authorization header format",
-            "received": authorization,
-            "expected": "Bearer <token>"
-        }
-    
-    token = authorization.replace("Bearer ", "")
-    
-    try:
-        # Try to decode
-        payload = decode_token(token)
-        
-        # Get user ID
-        user_id = payload.get("sub")
-        
-        # Try to find user
-        user = db.query(User).filter(User.id == int(user_id)).first()
-        
-        return {
-            "status": "success",
-            "token_valid": True,
-            "payload": payload,
-            "user_id": user_id,
-            "user_found": user is not None,
-            "user_active": user.is_active if user else None,
-            "user_email": user.email if user else None
-        }
-    except Exception as e:
-        return {
-            "status": "error",
-            "error": str(e),
-            "token_preview": token[:20] + "..."
-        }
-
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
